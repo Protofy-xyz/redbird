@@ -1,4 +1,7 @@
 # Redbird Reverse Proxy
+This is a fork of [OptimalBits/redbird](https://github.com/OptimalBits/redbird). The porpouse of this fork is to remove the [node-etcd](https://github.com/stianeikeland/node-etcd) dependency. This is because this package adds some OS dependencies that make more complex to distribute other packages that depends on this one.
+
+Anyways, the original package is great and we want to thanks to the original authors for their work.
 
 ## With built-in Cluster, HTTP2, [LetsEncrypt](https://letsencrypt.org/) and [Docker](https://www.docker.com/) support
 
@@ -45,7 +48,7 @@ TLS protected services that just works.
 
 
 ```sh
-npm install redbird
+npm install redbird-no-etcd
 ```
 
 ## Example
@@ -60,7 +63,7 @@ var proxy = require('redbird')({port: 80});
 var proxy = require('redbird')({port: 80, xfwd: false});
 
 // Route to any global ip
-proxy.register("optimalbits.com", "http://167.23.42.67:8000");
+proxy.register("protofy.xyz", "http://167.23.42.67:8000");
 
 // Route to any local ip, for example from docker containers.
 proxy.register("example.com", "http://172.17.42.1:8001");
@@ -273,33 +276,6 @@ docker(redbird).register("old.api.com", 'company/api:v1.0.0');
 docker(redbird).register("stable.api.com", 'company/api:v2.*');
 docker(redbird).register("preview.api.com", 'company/api:v[3-9].*');
 ```
-
-## etcd backend
-Redbird can use [node-etcd](https://github.com/stianeikeland/node-etcd) to automatically create proxy records from an etcd cluster. Configuration
-is accomplished by passing an array of [options](https://github.com/stianeikeland/node-etcd#constructor-options), plus the hosts and path variables,
-which define which etcd cluster hosts, and which directory within those hosts, that Redbird should poll for updates.
-
-```js
-var redbird = require('redbird')({
-  port:8080
-});
-
-var options = {
-  hosts: ['localhost:2379'], // REQUIRED - you must define array of cluster hosts
-	path: ['redbird'], // OPTIONAL - path to etcd keys
-	... // OPTIONAL - pass in node-etcd connection options
-}
-require('redbird').etcd(redbird,options);
-```
-etcd records can be created in one of two ways, either as a target destination pair:
-```/redbird/example.com			"8.8.8.8"```
-or by passing a JSON object containing multiple hosts, and Redbird options:
-```
-/redbird/derek.com				{ "hosts" : ["10.10.10.10", "11.11.11.11"]}
-/redbird/johnathan.com    { "ssl" : true }
-/redbird/jeff.com         { "docker" : "alpine/alpine:latest" }
-```
-
 
 ## Cluster support
 Redbird supports automatic node cluster generation. To use, just specify the number
